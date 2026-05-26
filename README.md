@@ -29,12 +29,6 @@ Gere a chave da aplicacao:
 docker compose exec app php artisan key:generate
 ```
 
-Rode as migrations:
-
-```bash
-docker compose exec app php artisan migrate
-```
-
 A aplicacao fica disponivel em:
 
 ```text
@@ -56,12 +50,36 @@ Password: secret
 Root password: root
 ```
 
+## MySQL
+
+```text
+Host: mysql
+Port: 3306
+```
+
+Para acessar o banco pela maquina host:
+
+```text
+Host: 127.0.0.1
+Port: 3307
+Database: time_tracking
+User: time_tracking
+Password: secret
+```
+
+Comandos uteis para o MySQL:
+
+```bash
+docker compose up -d mysql
+docker compose logs -f mysql
+docker compose exec mysql mysql -utime_tracking -psecret time_tracking
+docker compose exec mysql mysql -uroot -proot
+```
+
 ## Comandos uteis
 
 ```bash
 docker compose ps
 docker compose logs -f app
 docker compose exec app php artisan test
-docker compose exec app php artisan migrate:fresh
 ```
-
