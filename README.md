@@ -83,3 +83,22 @@ docker compose ps
 docker compose logs -f app
 docker compose exec app php artisan test
 ```
+
+## Testes (MySQL)
+
+```text
+DB_DATABASE=time_tracking_testing
+DB_HOST=mysql
+DB_PORT=3306
+```
+
+Criar o database uma vez:
+
+```bash
+docker compose exec mysql mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS time_tracking_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
+
+Rodar os testes:
+```bash
+docker compose exec app php artisan test
+```
