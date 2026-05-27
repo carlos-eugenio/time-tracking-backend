@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EmployeeController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
@@ -11,4 +12,14 @@ Route::prefix('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
     });
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('employees', [EmployeeController::class, 'index']);
+    Route::post('employees', [EmployeeController::class, 'create']);
+    Route::get('employees/{employee}', [EmployeeController::class, 'show']);
+    Route::match(['put', 'patch'], 'employees/{employee}', [EmployeeController::class, 'update']);
+    Route::delete('employees/{employee}', [EmployeeController::class, 'delete']);
+    Route::patch('employees/{employee}/activate', [EmployeeController::class, 'activate']);
+    Route::patch('employees/{employee}/deactivate', [EmployeeController::class, 'deactivate']);
 });
