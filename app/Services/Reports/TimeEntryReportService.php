@@ -4,15 +4,14 @@ namespace App\Services\Reports;
 
 use App\Models\TimeEntry;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class TimeEntryReportService
 {
-    public function paginate(array $filters): LengthAwarePaginator
+    public function query(array $filters): Builder
     {
         $sort = $filters['sort'] ?? 'date';
         $direction = $filters['direction'] ?? 'asc';
-        $perPage = (int) ($filters['per_page'] ?? 15);
-        $perPage = max(1, min(100, $perPage));
 
         $start = $filters['start_date'].' 00:00:00';
         $end = $filters['end_date'].' 23:59:59';
@@ -34,7 +33,15 @@ class TimeEntryReportService
             $base->orderBy('employees.name', 'asc');
         }
 
-        return $base->paginate($perPage);
+        return $base;
+    }
+
+    public function paginate(array $filters): LengthAwarePaginator
+    {
+        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = max(1, min(100, $perPage));
+
+        return $this->query($filters)->paginate($perPage);
     }
 
     public function totalMinutes(array $filters): int

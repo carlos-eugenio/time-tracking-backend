@@ -32,4 +32,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('time-entries/{timeEntry}', [TimeEntryController::class, 'delete']);
 
     Route::get('reports/time-entries', [TimeEntryReportController::class, 'index']);
+    Route::get('reports/time-entries/export', [TimeEntryReportController::class, 'export']);
 });
