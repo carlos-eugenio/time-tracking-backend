@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\TimeEntryController;
+use App\Http\Controllers\Api\Reports\TimeEntryReportController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
@@ -29,4 +30,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('time-entries/{timeEntry}', [TimeEntryController::class, 'show']);
     Route::match(['put', 'patch'], 'time-entries/{timeEntry}', [TimeEntryController::class, 'update']);
     Route::delete('time-entries/{timeEntry}', [TimeEntryController::class, 'delete']);
+
+    Route::get('reports/time-entries', [TimeEntryReportController::class, 'index']);
 });
