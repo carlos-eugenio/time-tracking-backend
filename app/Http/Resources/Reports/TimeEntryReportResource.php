@@ -14,7 +14,7 @@ class TimeEntryReportResource extends JsonResource
 
         $durationMinutes = null;
         if ($this->ended_at) {
-            $durationMinutes = (int) $this->ended_at->diffInMinutes($this->started_at);
+            $durationMinutes = (int) $this->started_at->diffInMinutes($this->ended_at, true);
         }
 
         return [
@@ -27,4 +27,3 @@ class TimeEntryReportResource extends JsonResource
         ];
     }
 }
-

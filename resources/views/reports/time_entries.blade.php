@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8">
     <title>Relatório - Registro de horas</title>
@@ -17,7 +17,12 @@
     <h1>Relatório - Registro de horas</h1>
 
     <div class="meta">
-        <div><strong>Período:</strong> {{ $filters['start_date'] }} to {{ $filters['end_date'] }}</div>
+        <div>
+            <strong>Período:</strong>
+            {{ \Carbon\CarbonImmutable::parse($filters['start_date'])->format('d/m/Y') }}
+            até
+            {{ \Carbon\CarbonImmutable::parse($filters['end_date'])->format('d/m/Y') }}
+        </div>
         @if (!empty($filters['employee_id']))
             <div><strong>Funcionário:</strong> #{{ $filters['employee_id'] }}</div>
         @endif
@@ -38,11 +43,11 @@
             @foreach ($rows as $row)
                 <tr>
                     <td>{{ $row->employee_name }}</td>
-                    <td>{{ optional($row->started_at)->format('Y-m-d H:i:s') }}</td>
-                    <td>{{ optional($row->ended_at)->format('Y-m-d H:i:s') }}</td>
+                    <td>{{ optional($row->started_at)->format('d/m/Y H:i:s') }}</td>
+                    <td>{{ optional($row->ended_at)->format('d/m/Y H:i:s') }}</td>
                     <td class="right">
                         @if ($row->ended_at)
-                            {{ $row->ended_at->diffInMinutes($row->started_at) }}
+                            {{ (int) $row->started_at->diffInMinutes($row->ended_at, true) }}
                         @endif
                     </td>
                     <td>{{ $row->notes }}</td>
@@ -52,4 +57,3 @@
     </table>
 </body>
 </html>
-

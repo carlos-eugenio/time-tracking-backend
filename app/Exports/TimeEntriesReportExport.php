@@ -22,12 +22,12 @@ class TimeEntriesReportExport implements FromQuery, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
-            'Employee',
-            'Date',
-            'Started At',
-            'Ended At',
-            'Total Minutes',
-            'Notes',
+            'Funcionário',
+            'Data',
+            'Início',
+            'Fim',
+            'Total em minutos',
+            'Observações',
         ];
     }
 
@@ -38,17 +38,16 @@ class TimeEntriesReportExport implements FromQuery, WithHeadings, WithMapping
 
         $totalMinutes = null;
         if ($startedAt && $endedAt) {
-            $totalMinutes = $endedAt->diffInMinutes($startedAt);
+            $totalMinutes = (int) $startedAt->diffInMinutes($endedAt, true);
         }
 
         return [
             (string) $row->employee_name,
-            $startedAt?->toDateString(),
-            $startedAt?->format('Y-m-d H:i:s'),
-            $endedAt?->format('Y-m-d H:i:s'),
+            $startedAt?->format('d/m/Y'),
+            $startedAt?->format('d/m/Y H:i:s'),
+            $endedAt?->format('d/m/Y H:i:s'),
             $totalMinutes,
             $row->notes,
         ];
     }
 }
-
