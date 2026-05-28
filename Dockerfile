@@ -9,11 +9,18 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         git \
         unzip \
+        libfreetype6-dev \
         libicu-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
         libzip-dev \
         libonig-dev \
+        libwebp-dev \
     && docker-php-ext-install \
         bcmath \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install \
+        gd \
         intl \
         mbstring \
         pdo_mysql \
