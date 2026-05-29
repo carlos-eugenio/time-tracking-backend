@@ -26,13 +26,14 @@ class TimeEntryReportController extends Controller
 
         return response()->json([
             'data' => TimeEntryReportResource::collection($paginator)->response()->getData(true)['data'],
-            'meta' => array_merge(
-                $paginator->toArray()['meta'] ?? [],
-                [
-                    'total_minutes' => $totalMinutes,
-                    'total_hours' => round($totalMinutes / 60, 2),
-                ]
-            ),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'total_minutes' => $totalMinutes,
+                'total_hours' => round($totalMinutes / 60, 2),
+            ],
         ]);
     }
 
