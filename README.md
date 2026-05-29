@@ -4,8 +4,8 @@ Backend em Laravel 12 para controle de colaboradores, lançamentos de ponto, rel
 
 ## Funcionalidades
 
-- Autenticacao via Laravel Sanctum.
-- Seed de usuario administrador.
+- Autenticação via Laravel Sanctum.
+- Seed de usuário administrador.
 - CRUD de colaboradores.
 - Ativação e inativação de colaboradores.
 - CRUD de lançamentos de ponto.
@@ -29,17 +29,15 @@ Backend em Laravel 12 para controle de colaboradores, lançamentos de ponto, rel
 - Laravel Excel
 - DomPDF
 
-## Requisitos
+## Requisitos com Docker
 
 - Git
 - Docker
 - Docker Compose v2
 
-Nao e necessario ter PHP, Composer, MySQL ou Nginx instalados na maquina host para rodar pelo Docker.
-
 ## Rodando com Docker
 
-Clone o repositorio:
+Clone o repositório:
 
 ```bash
 git clone URL_DO_REPOSITORIO_BACKEND
@@ -93,6 +91,83 @@ http://localhost:8080/api
 
 Se as portas `8080` ou `3307` já estiverem em uso, altere no `docker-compose.yml` ou no `.env` antes de subir os containers.
 
+## Requisitos para rodar local sem Docker
+
+- PHP 8.2+
+- Composer
+- MySQL 8
+- Extensoes PHP usadas pelo projeto, como `pdo_mysql`, `mbstring`, `intl`, `zip`, `gd` e `bcmath`
+
+## Rodando sem Docker
+
+Clone o repositório:
+
+```bash
+git clone URL_DO_REPOSITORIO_BACKEND
+cd backend
+```
+
+Instale as dependências PHP:
+
+```bash
+composer install
+```
+
+Crie o arquivo de ambiente:
+
+```bash
+cp .env.example .env
+```
+
+Configure no `.env` a conexão com o MySQL. Exemplo:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=time_tracking
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Crie o banco de dados no MySQL:
+
+```sql
+CREATE DATABASE time_tracking CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+Gere a chave da aplicação:
+
+```bash
+php artisan key:generate
+```
+
+Rode as migrations:
+
+```bash
+php artisan migrate
+```
+
+Popule o banco com o usuário admin, colaboradores e lançamentos de ponto:
+
+```bash
+php artisan db:seed
+```
+
+Suba o servidor local:
+
+```bash
+php artisan serve
+```
+
+A API ficará disponível em:
+
+```text
+http://127.0.0.1:8000/api
+```
+
+Importante: ao rodar sem Docker, ajuste a variável `base_url` na collection Postman se for usar a collection
+
 ## Credenciais
 
 Usuario criado pela seed:
@@ -102,7 +177,7 @@ Email: admin@email.com
 Senha: adminTeste1234
 ```
 
-Banco MySQL para conexao a partir da maquina host:
+Banco MySQL para conexão a partir da maquina host:
 
 ```text
 Host: 127.0.0.1
@@ -190,13 +265,13 @@ Os testes usam o banco `time_tracking_testing`. Crie o database uma vez:
 docker compose exec mysql mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS time_tracking_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
-Rode a suite:
+Rode todos os testes:
 
 ```bash
 docker compose exec app php artisan test
 ```
 
-Rodar um arquivo especifico:
+Rodar testes de features separadas:
 
 ```bash
 docker compose exec app php artisan test tests/Feature/EmployeesTest.php
