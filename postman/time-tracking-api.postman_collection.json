@@ -1,0 +1,712 @@
+{
+  "info": {
+    "_postman_id": "7d9e59c6-f9d5-4ebc-8b9e-time-tracking-api",
+    "name": "Time Tracking API",
+    "description": "Collection dos endpoints da API Laravel para autenticacao, colaboradores, lancamentos de ponto, relatorios e exportacoes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "employee_id",
+      "value": "1"
+    },
+    {
+      "key": "time_entry_id",
+      "value": "1"
+    },
+    {
+      "key": "start_date",
+      "value": "2026-05-01"
+    },
+    {
+      "key": "end_date",
+      "value": "2026-05-31"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.token) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@email.com\",\n  \"password\": \"adminTeste1234\",\n  \"device_name\": \"postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Campos: email obrigatorio, password obrigatorio, device_name opcional. O token retornado em data.token e salvo automaticamente na variavel token."
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Retorna o usuario autenticado. Requer Authorization: Bearer {{token}}."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revoga o token atual."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "Listar colaboradores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employees?per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employees"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Opcional. Quantidade por pagina."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar colaborador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) {",
+                  "  pm.collectionVariables.set('employee_id', json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Maria Souza\",\n  \"email\": \"maria.souza@example.com\",\n  \"document\": \"12345678900\",\n  \"job_title\": \"Analista Administrativo\",\n  \"registration_number\": \"EMP-001\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/employees",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employees"
+              ]
+            },
+            "description": "Obrigatorio: name. Opcionais: email, document, job_title, registration_number, is_active. email/document/registration_number devem ser unicos quando informados."
+          }
+        },
+        {
+          "name": "Detalhar colaborador",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employees/{{employee_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employees",
+                "{{employee_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar colaborador",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Maria Souza Silva\",\n  \"email\": \"maria.silva@example.com\",\n  \"document\": \"12345678900\",\n  \"job_title\": \"Coordenadora Administrativa\",\n  \"registration_number\": \"EMP-001\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/employees/{{employee_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employees",
+                "{{employee_id}}"
+              ]
+            },
+            "description": "Aceita PUT ou PATCH. Todos os campos sao opcionais, mas name nao pode ser vazio quando enviado."
+          }
+        },
+        {
+          "name": "Ativar colaborador",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employees/{{employee_id}}/activate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employees",
+                "{{employee_id}}",
+                "activate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Inativar colaborador",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employees/{{employee_id}}/deactivate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employees",
+                "{{employee_id}}",
+                "deactivate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Excluir colaborador",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employees/{{employee_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employees",
+                "{{employee_id}}"
+              ]
+            },
+            "description": "Retorna 204 quando excluido com sucesso."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Time Entries",
+      "item": [
+        {
+          "name": "Listar lancamentos de ponto",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/time-entries?employee_id={{employee_id}}&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "time-entries"
+              ],
+              "query": [
+                {
+                  "key": "employee_id",
+                  "value": "{{employee_id}}",
+                  "description": "Opcional. Filtra por colaborador."
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Opcional. Quantidade por pagina."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar lancamento de ponto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) {",
+                  "  pm.collectionVariables.set('time_entry_id', json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": {{employee_id}},\n  \"started_at\": \"2026-05-24 08:00:00\",\n  \"ended_at\": \"2026-05-24 17:00:00\",\n  \"notes\": \"Expediente normal\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/time-entries",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "time-entries"
+              ]
+            },
+            "description": "Obrigatorios: employee_id de colaborador ativo e started_at. Opcionais: ended_at, notes. ended_at deve ser posterior a started_at quando informado."
+          }
+        },
+        {
+          "name": "Detalhar lancamento de ponto",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/time-entries/{{time_entry_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "time-entries",
+                "{{time_entry_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar lancamento de ponto",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": {{employee_id}},\n  \"started_at\": \"2026-05-24 08:30:00\",\n  \"ended_at\": \"2026-05-24 17:30:00\",\n  \"notes\": \"Horario ajustado\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/time-entries/{{time_entry_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "time-entries",
+                "{{time_entry_id}}"
+              ]
+            },
+            "description": "Aceita PUT ou PATCH. employee_id e started_at sao opcionais no update quando nao forem alterados. ended_at deve ser posterior ao started_at efetivo."
+          }
+        },
+        {
+          "name": "Excluir lancamento de ponto",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/time-entries/{{time_entry_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "time-entries",
+                "{{time_entry_id}}"
+              ]
+            },
+            "description": "Retorna 204 quando excluido com sucesso."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Relatorio de pontos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/time-entries?start_date={{start_date}}&end_date={{end_date}}&employee_id={{employee_id}}&sort=date&direction=asc&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "time-entries"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "{{start_date}}",
+                  "description": "Obrigatorio. Formato Y-m-d."
+                },
+                {
+                  "key": "end_date",
+                  "value": "{{end_date}}",
+                  "description": "Obrigatorio. Formato Y-m-d. Deve ser maior ou igual a start_date."
+                },
+                {
+                  "key": "employee_id",
+                  "value": "{{employee_id}}",
+                  "description": "Opcional. Filtra por colaborador."
+                },
+                {
+                  "key": "sort",
+                  "value": "date",
+                  "description": "Opcional. Valores: name ou date."
+                },
+                {
+                  "key": "direction",
+                  "value": "asc",
+                  "description": "Opcional. Valores: asc ou desc."
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Opcional. Minimo 1, maximo 100."
+                }
+              ]
+            },
+            "description": "Retorna data paginado e meta com total_minutes e total_hours."
+          }
+        },
+        {
+          "name": "Exportar relatorio CSV",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/csv"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/time-entries/export?start_date={{start_date}}&end_date={{end_date}}&sort=date&direction=asc&format=csv",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "time-entries",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "{{start_date}}"
+                },
+                {
+                  "key": "end_date",
+                  "value": "{{end_date}}"
+                },
+                {
+                  "key": "employee_id",
+                  "value": "{{employee_id}}",
+                  "disabled": true,
+                  "description": "Opcional. Habilite se quiser filtrar por colaborador."
+                },
+                {
+                  "key": "sort",
+                  "value": "date",
+                  "description": "Opcional. name ou date."
+                },
+                {
+                  "key": "direction",
+                  "value": "asc",
+                  "description": "Opcional. asc ou desc."
+                },
+                {
+                  "key": "format",
+                  "value": "csv",
+                  "description": "Obrigatorio. csv, xlsx ou pdf."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Exportar relatorio XLSX",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/time-entries/export?start_date={{start_date}}&end_date={{end_date}}&sort=name&direction=asc&format=xlsx",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "time-entries",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "{{start_date}}"
+                },
+                {
+                  "key": "end_date",
+                  "value": "{{end_date}}"
+                },
+                {
+                  "key": "sort",
+                  "value": "name",
+                  "description": "Opcional. name ou date."
+                },
+                {
+                  "key": "direction",
+                  "value": "asc",
+                  "description": "Opcional. asc ou desc."
+                },
+                {
+                  "key": "format",
+                  "value": "xlsx",
+                  "description": "Obrigatorio. csv, xlsx ou pdf."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Exportar relatorio PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/pdf"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/time-entries/export?start_date={{start_date}}&end_date={{end_date}}&sort=date&direction=desc&format=pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "time-entries",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "{{start_date}}"
+                },
+                {
+                  "key": "end_date",
+                  "value": "{{end_date}}"
+                },
+                {
+                  "key": "sort",
+                  "value": "date",
+                  "description": "Opcional. name ou date."
+                },
+                {
+                  "key": "direction",
+                  "value": "desc",
+                  "description": "Opcional. asc ou desc."
+                },
+                {
+                  "key": "format",
+                  "value": "pdf",
+                  "description": "Obrigatorio. csv, xlsx ou pdf."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
