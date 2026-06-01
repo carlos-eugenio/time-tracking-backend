@@ -20,7 +20,7 @@ class EmployeeController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = (int) $request->query('per_page', 15);
-        $paginator = $this->employees->paginate($perPage);
+        $paginator = $this->employees->paginate((int) $request->user()->id, $perPage);
 
         return response()->json(
             EmployeeResource::collection($paginator)->response()->getData(true)
@@ -29,15 +29,17 @@ class EmployeeController extends Controller
 
     public function create(StoreEmployeeRequest $request): JsonResponse
     {
-        $employee = $this->employees->create($request->validated());
+        $employee = $this->employees->create($request->validated(), (int) $request->user()->id);
 
         return response()->json([
             'data' => EmployeeResource::make($employee),
         ], 201);
     }
 
-    public function show(Employee $employee): JsonResponse
+    public function show(Request $request, Employee $employee): JsonResponse
     {
+        $this->ensureEmployeeBelongsToUser($employee, (int) $request->user()->id);
+
         return response()->json([
             'data' => EmployeeResource::make($employee),
         ]);
@@ -45,6 +47,8 @@ class EmployeeController extends Controller
 
     public function update(UpdateEmployeeRequest $request, Employee $employee): JsonResponse
     {
+        $this->ensureEmployeeBelongsToUser($employee, (int) $request->user()->id);
+
         $employee = $this->employees->update($employee, $request->validated());
 
         return response()->json([
@@ -52,15 +56,19 @@ class EmployeeController extends Controller
         ]);
     }
 
-    public function delete(Employee $employee): JsonResponse
+    public function delete(Request $request, Employee $employee): JsonResponse
     {
+        $this->ensureEmployeeBelongsToUser($employee, (int) $request->user()->id);
+
         $this->employees->delete($employee);
 
         return response()->json([], 204);
     }
 
-    public function activate(Employee $employee): JsonResponse
+    public function activate(Request $request, Employee $employee): JsonResponse
     {
+        $this->ensureEmployeeBelongsToUser($employee, (int) $request->user()->id);
+
         $employee = $this->employees->setActive($employee, true);
 
         return response()->json([
@@ -68,12 +76,19 @@ class EmployeeController extends Controller
         ]);
     }
 
-    public function deactivate(Employee $employee): JsonResponse
+    public function deactivate(Request $request, Employee $employee): JsonResponse
     {
+        $this->ensureEmployeeBelongsToUser($employee, (int) $request->user()->id);
+
         $employee = $this->employees->setActive($employee, false);
 
         return response()->json([
             'data' => EmployeeResource::make($employee),
         ]);
+    }
+
+    private function ensureEmployeeBelongsToUser(Employee $employee, int $userId): void
+    {
+        abort_unless((int) $employee->user_id === $userId, 404);
     }
 }

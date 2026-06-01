@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\TimeEntryController;
 use App\Http\Controllers\Api\Reports\TimeEntryReportController;
 
 Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
 
     Route::middleware('auth:sanctum')->group(function () {

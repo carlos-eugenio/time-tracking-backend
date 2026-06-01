@@ -21,8 +21,9 @@ class TimeEntryReportController extends Controller
     public function index(TimeEntryReportRequest $request): JsonResponse
     {
         $filters = $request->validated();
-        $paginator = $this->reports->paginate($filters);
-        $totalMinutes = $this->reports->totalMinutes($filters);
+        $userId = (int) $request->user()->id;
+        $paginator = $this->reports->paginate($filters, $userId);
+        $totalMinutes = $this->reports->totalMinutes($filters, $userId);
 
         return response()->json([
             'data' => TimeEntryReportResource::collection($paginator)->response()->getData(true)['data'],
@@ -40,6 +41,7 @@ class TimeEntryReportController extends Controller
     public function export(TimeEntryReportExportRequest $request)
     {
         $filters = $request->validated();
+        $userId = (int) $request->user()->id;
         $format = $filters['format'];
 
         $baseName = 'time-entries-'.$filters['start_date'].'_to_'.$filters['end_date'];
@@ -48,8 +50,8 @@ class TimeEntryReportController extends Controller
         }
 
         if ($format === 'pdf') {
-            $rows = $this->reports->query($filters)->get();
-            $totalMinutes = $this->reports->totalMinutes($filters);
+            $rows = $this->reports->query($filters, $userId)->get();
+            $totalMinutes = $this->reports->totalMinutes($filters, $userId);
 
             $pdf = Pdf::loadView('reports.time_entries', [
                 'rows' => $rows,
@@ -60,7 +62,7 @@ class TimeEntryReportController extends Controller
             return $pdf->download($baseName.'.pdf');
         }
 
-        $query = $this->reports->query($filters);
+        $query = $this->reports->query($filters, $userId);
         $export = new TimeEntriesReportExport($query);
 
         if ($format === 'csv') {

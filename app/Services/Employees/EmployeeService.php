@@ -7,17 +7,20 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EmployeeService
 {
-    public function paginate(int $perPage = 15): LengthAwarePaginator
+    public function paginate(int $userId, int $perPage = 15): LengthAwarePaginator
     {
         $perPage = max(1, min(100, $perPage));
 
         return Employee::query()
+            ->where('user_id', $userId)
             ->orderBy('name')
             ->paginate($perPage);
     }
 
-    public function create(array $data): Employee
+    public function create(array $data, int $userId): Employee
     {
+        $data['user_id'] = $userId;
+
         return Employee::query()->create($data);
     }
 
@@ -42,4 +45,3 @@ class EmployeeService
         return $employee;
     }
 }
-

@@ -15,12 +15,16 @@ class UpdateTimeEntryRequest extends FormRequest
 
     public function rules(): array
     {
+        $userId = $this->user()?->id;
+
         return [
             'employee_id' => [
                 'sometimes',
                 'required',
                 'integer',
-                Rule::exists('employees', 'id')->where('is_active', true),
+                Rule::exists('employees', 'id')
+                    ->where('is_active', true)
+                    ->where('user_id', $userId),
             ],
             'started_at' => ['sometimes', 'required', 'date'],
             'ended_at' => ['nullable', 'date'],
@@ -57,4 +61,3 @@ class UpdateTimeEntryRequest extends FormRequest
         });
     }
 }
-

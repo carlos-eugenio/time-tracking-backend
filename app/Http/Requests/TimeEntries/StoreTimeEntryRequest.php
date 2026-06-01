@@ -14,11 +14,15 @@ class StoreTimeEntryRequest extends FormRequest
 
     public function rules(): array
     {
+        $userId = $this->user()?->id;
+
         return [
             'employee_id' => [
                 'required',
                 'integer',
-                Rule::exists('employees', 'id')->where('is_active', true),
+                Rule::exists('employees', 'id')
+                    ->where('is_active', true)
+                    ->where('user_id', $userId),
             ],
             'started_at' => ['required', 'date'],
             'ended_at' => ['nullable', 'date', 'after:started_at'],
@@ -26,4 +30,3 @@ class StoreTimeEntryRequest extends FormRequest
         ];
     }
 }
-

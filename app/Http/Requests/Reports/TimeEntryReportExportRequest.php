@@ -14,14 +14,15 @@ class TimeEntryReportExportRequest extends FormRequest
 
     public function rules(): array
     {
+        $userId = $this->user()?->id;
+
         return [
             'start_date' => ['required', 'date_format:Y-m-d'],
             'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
-            'employee_id' => ['nullable', 'integer', Rule::exists('employees', 'id')],
+            'employee_id' => ['nullable', 'integer', Rule::exists('employees', 'id')->where('user_id', $userId)],
             'sort' => ['sometimes', Rule::in(['name', 'date'])],
             'direction' => ['sometimes', Rule::in(['asc', 'desc'])],
             'format' => ['required', Rule::in(['csv', 'xlsx', 'pdf'])],
         ];
     }
 }
-

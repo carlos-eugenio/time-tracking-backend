@@ -17,15 +17,15 @@ class UpdateEmployeeRequest extends FormRequest
     {
         /** @var Employee|null $employee */
         $employee = $this->route('employee');
+        $userId = $this->user()?->id;
 
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('employees', 'email')->ignore($employee?->id)],
-            'document' => ['nullable', 'string', 'max:255', Rule::unique('employees', 'document')->ignore($employee?->id)],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('employees', 'email')->where(fn ($query) => $query->where('user_id', $userId))->ignore($employee?->id)],
+            'document' => ['nullable', 'string', 'max:255', Rule::unique('employees', 'document')->where(fn ($query) => $query->where('user_id', $userId))->ignore($employee?->id)],
             'job_title' => ['nullable', 'string', 'max:255'],
-            'registration_number' => ['nullable', 'string', 'max:255', Rule::unique('employees', 'registration_number')->ignore($employee?->id)],
+            'registration_number' => ['nullable', 'string', 'max:255', Rule::unique('employees', 'registration_number')->where(fn ($query) => $query->where('user_id', $userId))->ignore($employee?->id)],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }
-

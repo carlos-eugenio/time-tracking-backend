@@ -23,7 +23,7 @@ class TimeEntryController extends Controller
         $employeeId = $request->query('employee_id');
         $employeeId = is_null($employeeId) ? null : (int) $employeeId;
 
-        $paginator = $this->timeEntries->paginate($employeeId, $perPage);
+        $paginator = $this->timeEntries->paginate((int) $request->user()->id, $employeeId, $perPage);
 
         return response()->json(
             TimeEntryResource::collection($paginator)->response()->getData(true)
@@ -40,8 +40,10 @@ class TimeEntryController extends Controller
         ], 201);
     }
 
-    public function show(TimeEntry $timeEntry): JsonResponse
+    public function show(Request $request, TimeEntry $timeEntry): JsonResponse
     {
+        $this->ensureTimeEntryBelongsToUser($timeEntry, (int) $request->user()->id);
+
         return response()->json([
             'data' => TimeEntryResource::make($timeEntry),
         ]);
@@ -50,6 +52,8 @@ class TimeEntryController extends Controller
     public function update(UpdateTimeEntryRequest $request, TimeEntry $timeEntry): JsonResponse
     {
         $userId = (int) $request->user()->id;
+        $this->ensureTimeEntryBelongsToUser($timeEntry, $userId);
+
         $timeEntry = $this->timeEntries->update($timeEntry, $request->validated(), $userId);
 
         return response()->json([
@@ -57,11 +61,17 @@ class TimeEntryController extends Controller
         ]);
     }
 
-    public function delete(TimeEntry $timeEntry): JsonResponse
+    public function delete(Request $request, TimeEntry $timeEntry): JsonResponse
     {
+        $this->ensureTimeEntryBelongsToUser($timeEntry, (int) $request->user()->id);
+
         $this->timeEntries->delete($timeEntry);
 
         return response()->json([], 204);
     }
-}
 
+    private function ensureTimeEntryBelongsToUser(TimeEntry $timeEntry, int $userId): void
+    {
+        abort_unless((int) $timeEntry->employee()->value('user_id') === $userId, 404);
+    }
+}
