@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,6 +18,7 @@ class EmployeeFactory extends Factory
         $name = $this->faker->name();
 
         return [
+            'user_id' => User::factory(),
             'name' => $name,
             'email' => $this->faker->unique()->safeEmail(),
             'document' => $this->faker->unique()->numerify('###########'),
@@ -31,4 +33,3 @@ class EmployeeFactory extends Factory
         return $this->state(fn () => ['is_active' => false]);
     }
 }
-

@@ -3,12 +3,17 @@
 namespace Database\Seeders;
 
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class EmployeeSeeder extends Seeder
 {
     public function run(): void
     {
+        $admin = User::query()
+            ->where('email', env('ADMIN_EMAIL', 'admin@email.com'))
+            ->firstOrFail();
+
         $employees = [
             [
                 'name' => 'Joao Pedro Almeida',
@@ -77,8 +82,13 @@ class EmployeeSeeder extends Seeder
         ];
 
         foreach ($employees as $employee) {
+            $employee['user_id'] = $admin->id;
+
             Employee::query()->updateOrCreate(
-                ['registration_number' => $employee['registration_number']],
+                [
+                    'user_id' => $admin->id,
+                    'registration_number' => $employee['registration_number'],
+                ],
                 $employee
             );
         }

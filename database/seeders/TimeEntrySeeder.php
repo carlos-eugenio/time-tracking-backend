@@ -14,9 +14,9 @@ class TimeEntrySeeder extends Seeder
     {
         $admin = User::query()
             ->where('email', env('ADMIN_EMAIL', 'admin@email.com'))
-            ->first();
+            ->firstOrFail();
 
-        $userId = $admin?->id;
+        $userId = $admin->id;
 
         $entriesByRegistration = [
             '1001' => [
@@ -58,6 +58,7 @@ class TimeEntrySeeder extends Seeder
 
         foreach ($entriesByRegistration as $registrationNumber => $entries) {
             $employee = Employee::query()
+                ->where('user_id', $userId)
                 ->where('registration_number', $registrationNumber)
                 ->first();
 
