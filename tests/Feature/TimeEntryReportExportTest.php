@@ -15,9 +15,10 @@ class TimeEntryReportExportTest extends TestCase
 
     public function test_can_export_csv_xlsx_and_pdf(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        $employee = Employee::factory()->create(['is_active' => true, 'name' => 'Ana']);
+        $employee = Employee::factory()->create(['user_id' => $user->id, 'is_active' => true, 'name' => 'Ana']);
         TimeEntry::factory()->create([
             'employee_id' => $employee->id,
             'started_at' => '2026-05-10 08:00:00',
@@ -40,4 +41,3 @@ class TimeEntryReportExportTest extends TestCase
             ->assertHeader('content-disposition');
     }
 }
-

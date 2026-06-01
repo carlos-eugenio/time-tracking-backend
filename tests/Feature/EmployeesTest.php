@@ -20,7 +20,8 @@ class EmployeesTest extends TestCase
 
     public function test_authenticated_user_can_create_employee(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
         $payload = [
             'name' => 'Maria da Silva',
@@ -33,7 +34,10 @@ class EmployeesTest extends TestCase
         $response = $this->postJson('/api/employees', $payload);
         $response->assertCreated();
         $response->assertJsonPath('data.name', 'Maria da Silva');
-        $this->assertDatabaseHas('employees', ['email' => 'maria@email.com']);
+        $this->assertDatabaseHas('employees', [
+            'email' => 'maria@email.com',
+            'user_id' => $user->id,
+        ]);
     }
 
     public function test_create_employee_requires_name(): void
@@ -47,9 +51,10 @@ class EmployeesTest extends TestCase
 
     public function test_employee_email_must_be_unique_when_present(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        Employee::factory()->create(['email' => 'maria@email.com']);
+        Employee::factory()->create(['user_id' => $user->id, 'email' => 'maria@email.com']);
 
         $this->postJson('/api/employees', [
             'name' => 'Maria da Silva',
@@ -59,9 +64,11 @@ class EmployeesTest extends TestCase
 
     public function test_authenticated_user_can_list_employees(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        Employee::factory()->count(3)->create();
+        Employee::factory()->count(3)->create(['user_id' => $user->id]);
+        Employee::factory()->count(2)->create();
 
         $response = $this->getJson('/api/employees');
         $response->assertOk();
@@ -70,13 +77,16 @@ class EmployeesTest extends TestCase
             'links',
             'meta',
         ]);
+        $this->assertCount(3, $response->json('data'));
     }
 
     public function test_authenticated_user_can_update_employee(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
         $employee = Employee::factory()->create([
+            'user_id' => $user->id,
             'name' => 'Maria da Silva',
             'email' => 'maria@email.com',
         ]);
@@ -88,9 +98,10 @@ class EmployeesTest extends TestCase
 
     public function test_authenticated_user_can_deactivate_and_activate_employee(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        $employee = Employee::factory()->create(['is_active' => true]);
+        $employee = Employee::factory()->create(['user_id' => $user->id, 'is_active' => true]);
 
         $this->patchJson("/api/employees/{$employee->id}/deactivate")
             ->assertOk()
@@ -99,5 +110,16 @@ class EmployeesTest extends TestCase
         $this->patchJson("/api/employees/{$employee->id}/activate")
             ->assertOk()
             ->assertJsonPath('data.is_active', true);
+    }
+
+    public function test_authenticated_user_cannot_access_employee_from_another_user(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $employee = Employee::factory()->create();
+
+        $this->getJson("/api/employees/{$employee->id}")->assertNotFound();
+        $this->patchJson("/api/employees/{$employee->id}", ['name' => 'Outro nome'])->assertNotFound();
+        $this->deleteJson("/api/employees/{$employee->id}")->assertNotFound();
     }
 }

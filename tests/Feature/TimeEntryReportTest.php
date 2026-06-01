@@ -21,9 +21,11 @@ class TimeEntryReportTest extends TestCase
 
     public function test_report_filters_by_period_and_sums_total_minutes(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        $employee = Employee::factory()->create(['name' => 'Ana', 'is_active' => true]);
+        $employee = Employee::factory()->create(['user_id' => $user->id, 'name' => 'Ana', 'is_active' => true]);
+        $otherEmployee = Employee::factory()->create(['name' => 'Bruno', 'is_active' => true]);
 
         TimeEntry::factory()->create([
             'employee_id' => $employee->id,
@@ -37,6 +39,12 @@ class TimeEntryReportTest extends TestCase
             'ended_at' => '2026-04-10 09:00:00',
         ]);
 
+        TimeEntry::factory()->create([
+            'employee_id' => $otherEmployee->id,
+            'started_at' => '2026-05-10 08:00:00',
+            'ended_at' => '2026-05-10 10:00:00',
+        ]);
+
         $response = $this->getJson('/api/reports/time-entries?start_date=2026-05-01&end_date=2026-05-31');
         $response->assertOk();
         $response->assertJsonPath('meta.total_minutes', 90);
@@ -44,10 +52,11 @@ class TimeEntryReportTest extends TestCase
 
     public function test_report_can_sort_by_name(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        $a = Employee::factory()->create(['name' => 'Ana', 'is_active' => true]);
-        $b = Employee::factory()->create(['name' => 'Bruno', 'is_active' => true]);
+        $a = Employee::factory()->create(['user_id' => $user->id, 'name' => 'Ana', 'is_active' => true]);
+        $b = Employee::factory()->create(['user_id' => $user->id, 'name' => 'Bruno', 'is_active' => true]);
 
         TimeEntry::factory()->create([
             'employee_id' => $b->id,
@@ -66,4 +75,3 @@ class TimeEntryReportTest extends TestCase
         $this->assertSame('Ana', $response->json('data.0.employee_name'));
     }
 }
-

@@ -24,7 +24,7 @@ class TimeEntriesTest extends TestCase
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $employee = Employee::factory()->create(['is_active' => true]);
+        $employee = Employee::factory()->create(['user_id' => $user->id, 'is_active' => true]);
 
         $payload = [
             'employee_id' => $employee->id,
@@ -46,9 +46,10 @@ class TimeEntriesTest extends TestCase
 
     public function test_cannot_create_time_entry_for_inactive_employee(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        $employee = Employee::factory()->create(['is_active' => false]);
+        $employee = Employee::factory()->create(['user_id' => $user->id, 'is_active' => false]);
 
         $this->postJson('/api/time-entries', [
             'employee_id' => $employee->id,
@@ -58,9 +59,10 @@ class TimeEntriesTest extends TestCase
 
     public function test_create_time_entry_requires_started_at(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        $employee = Employee::factory()->create(['is_active' => true]);
+        $employee = Employee::factory()->create(['user_id' => $user->id, 'is_active' => true]);
 
         $this->postJson('/api/time-entries', [
             'employee_id' => $employee->id,
@@ -69,9 +71,10 @@ class TimeEntriesTest extends TestCase
 
     public function test_create_time_entry_requires_ended_at_after_started_at_when_present(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        $employee = Employee::factory()->create(['is_active' => true]);
+        $employee = Employee::factory()->create(['user_id' => $user->id, 'is_active' => true]);
 
         $this->postJson('/api/time-entries', [
             'employee_id' => $employee->id,
@@ -82,13 +85,16 @@ class TimeEntriesTest extends TestCase
 
     public function test_authenticated_user_can_list_time_entries_and_filter_by_employee(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        $employeeA = Employee::factory()->create(['is_active' => true]);
-        $employeeB = Employee::factory()->create(['is_active' => true]);
+        $employeeA = Employee::factory()->create(['user_id' => $user->id, 'is_active' => true]);
+        $employeeB = Employee::factory()->create(['user_id' => $user->id, 'is_active' => true]);
+        $otherEmployee = Employee::factory()->create(['is_active' => true]);
 
         TimeEntry::factory()->count(2)->create(['employee_id' => $employeeA->id]);
         TimeEntry::factory()->count(3)->create(['employee_id' => $employeeB->id]);
+        TimeEntry::factory()->count(4)->create(['employee_id' => $otherEmployee->id]);
 
         $response = $this->getJson("/api/time-entries?employee_id={$employeeA->id}");
         $response->assertOk();
@@ -102,7 +108,7 @@ class TimeEntriesTest extends TestCase
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $employee = Employee::factory()->create(['is_active' => true]);
+        $employee = Employee::factory()->create(['user_id' => $user->id, 'is_active' => true]);
         $timeEntry = TimeEntry::factory()->create([
             'employee_id' => $employee->id,
             'created_by' => $user->id,
@@ -120,5 +126,27 @@ class TimeEntriesTest extends TestCase
             'updated_by' => $user->id,
         ]);
     }
-}
 
+    public function test_authenticated_user_cannot_create_time_entry_for_employee_from_another_user(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $employee = Employee::factory()->create(['is_active' => true]);
+
+        $this->postJson('/api/time-entries', [
+            'employee_id' => $employee->id,
+            'started_at' => '2026-05-27 08:00:00',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['employee_id']);
+    }
+
+    public function test_authenticated_user_cannot_access_time_entry_from_another_user(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $timeEntry = TimeEntry::factory()->create();
+
+        $this->getJson("/api/time-entries/{$timeEntry->id}")->assertNotFound();
+        $this->patchJson("/api/time-entries/{$timeEntry->id}", ['notes' => 'updated'])->assertNotFound();
+        $this->deleteJson("/api/time-entries/{$timeEntry->id}")->assertNotFound();
+    }
+}
