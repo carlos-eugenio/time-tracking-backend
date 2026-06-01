@@ -5,6 +5,7 @@ Backend em Laravel 12 para controle de colaboradores, lançamentos de ponto, rel
 ## Funcionalidades
 
 - Autenticação via Laravel Sanctum.
+- Cadastro de novos usuários.
 - Seed de usuário administrador.
 - CRUD de colaboradores.
 - Ativação e inativação de colaboradores.
@@ -80,8 +81,7 @@ Popule o banco com o usuário admin, colaboradores e lançamentos de ponto:
 docker compose exec app php artisan db:seed
 ```
 
-Importante: para testar o login, rode as seeds. 
-O usuário inicial é criado pelo `AdminUserSeeder`.
+Importante: as seeds criam um usuário administrador e dados de funcionarios e registro de pontos.
 
 A API ficará disponível em:
 
@@ -148,7 +148,7 @@ Rode as migrations:
 php artisan migrate
 ```
 
-Popule o banco com o usuário admin, colaboradores e lançamentos de ponto:
+Popular o banco com o usuário admin, colaboradores e lançamentos de ponto:
 
 ```bash
 php artisan db:seed
@@ -287,6 +287,7 @@ postman/time-tracking-api.postman_collection.json
 
 Ela possui exemplos para:
 
+- Cadastro de usuário.
 - Login.
 - Usuário autenticado.
 - Logout.
@@ -297,7 +298,7 @@ Ela possui exemplos para:
 
 ## Observacoes
 
-- Rode `db:seed` antes de testar a autenticação.
+- Rode `db:seed` para criar o usuário admin e os dados.
 - O primeiro `docker compose up -d --build` demora por causa das extensões e dependências Composer.
 - As dependências PHP são instaladas durante o build da imagem; a pasta `vendor` não precisa estar versionada.
 - O Nginx expoe a API em `http://localhost:8080/api` e encaminha as requisicoes PHP para o container `app`.

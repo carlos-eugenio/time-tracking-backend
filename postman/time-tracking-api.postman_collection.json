@@ -46,6 +46,54 @@
       "name": "Auth",
       "item": [
         {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.token) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Novo Usuario\",\n  \"email\": \"novo.usuario@example.com\",\n  \"password\": \"password\",\n  \"password_confirmation\": \"password\",\n  \"device_name\": \"postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Campos: name, email, password e password_confirmation obrigatorios. device_name opcional. O token retornado em data.token e salvo automaticamente na variavel token."
+          }
+        },
+        {
           "name": "Login",
           "event": [
             {
@@ -213,7 +261,7 @@
                 "employees"
               ]
             },
-            "description": "Obrigatorio: name. Opcionais: email, document, job_title, registration_number, is_active. email/document/registration_number devem ser unicos quando informados."
+            "description": "Obrigatorio: name. Opcionais: email, document, job_title, registration_number, is_active. email/document/registration_number devem ser unicos por usuario autenticado quando informados."
           }
         },
         {
